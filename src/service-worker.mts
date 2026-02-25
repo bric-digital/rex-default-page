@@ -5,7 +5,7 @@ class WebmunkDefaultPageModule extends REXServiceWorkerModule {
   initialPage:string
   defaultPage:string
   listenerAdded:boolean = false
-  tabListener: ((tabId: number, changeInfo: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab) => void) | null = null
+  tabListener: Parameters<typeof chrome.tabs.onUpdated.addListener>[0] | null = null
 
   moduleName() {
     return 'DefaultPageModule'
