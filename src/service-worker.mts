@@ -5,6 +5,7 @@ class WebmunkDefaultPageModule extends REXServiceWorkerModule {
   initialPage:string
   defaultPage:string
   listenerAdded:boolean = false
+  tabListener: ((tabId: number, changeInfo: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab) => void) | null = null
 
   moduleName() {
     return 'DefaultPageModule'
@@ -34,6 +35,16 @@ class WebmunkDefaultPageModule extends REXServiceWorkerModule {
   }
 
   updateConfiguration(config) {
+    if (config['enabled'] === false) {
+      if (this.listenerAdded && this.tabListener !== null) {
+        chrome.tabs.onUpdated.removeListener(this.tabListener)
+        this.tabListener = null
+        this.listenerAdded = false
+      }
+
+      return
+    }
+
     this.initialPage = config['initial_page']
     this.defaultPage = config['default_page']
 
@@ -48,7 +59,7 @@ class WebmunkDefaultPageModule extends REXServiceWorkerModule {
       })
 
     if (this.listenerAdded === false) {
-      chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+      this.tabListener = (tabId, changeInfo, tab) => {
         if (changeInfo.status === 'complete') {
 
         } else if (changeInfo.status === 'loading') {
@@ -65,7 +76,9 @@ class WebmunkDefaultPageModule extends REXServiceWorkerModule {
             chrome.tabs.update(tabId, { url: this.defaultPage })
           }
         }
-      })
+      }
+
+      chrome.tabs.onUpdated.addListener(this.tabListener)
 
       this.listenerAdded = true
     }
