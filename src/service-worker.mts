@@ -53,7 +53,9 @@ class WebmunkDefaultPageModule extends REXServiceWorkerModule {
         if (response.webmunkDefaultPageOpenedInitial === undefined) {
           chrome.storage.local.set({webmunkDefaultPageOpenedInitial: true})
           .then(() => {
-            chrome.tabs.create({ url: this.initialPage });
+            if (this.initialPage) {
+              chrome.tabs.create({ url: this.initialPage });
+            }
           })
         }
       })
