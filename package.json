@@ -1,21 +1,21 @@
 {
-    "name": "@bric/webmunk-default-page",
+    "name": "@bric/rex-default-page",
     "version": "0.0.1",
-    "description": "Webmunk module that sets the default page for new tabs and open windows.",
+    "description": "REX module that sets the default page for new tabs and open windows.",
     "keywords": [
         "extension",
-        "webmunk"
+        "rex"
     ],
     "author": "Behavioral Research Innovation Center",
     "type": "module",
     "main": "index.mts",
-    "homepage": "https://github.com/bric-digital/webmunk-default-page",
+    "homepage": "https://github.com/bric-digital/rex-default-page",
     "bugs": {
-        "url": "https://github.com/bric-digital/webmunk-default-page/issues"
+        "url": "https://github.com/bric-digital/rex-default-page/issues"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/bric-digital/webmunk-default-page.git"
+        "url": "git+https://github.com/bric-digital/rex-default-page.git"
     },
     "exports": {
         "./extension": "./src/extension.mts",

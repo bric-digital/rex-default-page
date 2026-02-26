@@ -1,10 +1,10 @@
-# webmunk-default-page
+# rex-default-page
 
-Webmunk module that sets the default page for new tabs and open windows.
+REX module that sets the default page for new tabs and open windows.
 
 ## Overview
 
-**webmunk-default-page** replaces the browser's default new tab page with a custom page. It:
+**rex-default-page** replaces the browser's default new tab page with a custom page. It:
 
 - Overrides Chrome's new tab page behavior
 - Shows a loading page initially while config loads
@@ -41,7 +41,7 @@ Add to your extension's `package.json` dependencies:
 ```json
 {
   "dependencies": {
-    "@bric/webmunk-default-page": "github:bric-digital/webmunk-default-page#main"
+    "@bric/rex-default-page": "github:bric-digital/rex-default-page#main"
   }
 }
 ```

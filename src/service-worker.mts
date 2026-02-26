@@ -1,7 +1,7 @@
 import { REXConfiguration } from '@bric/rex-core/extension'
 import rexCorePlugin, { REXServiceWorkerModule, registerREXModule } from '@bric/rex-core/service-worker'
 
-class WebmunkDefaultPageModule extends REXServiceWorkerModule {
+class REXDefaultPageModule extends REXServiceWorkerModule {
   initialPage:string
   defaultPage:string
   listenerAdded:boolean = false
@@ -48,10 +48,10 @@ class WebmunkDefaultPageModule extends REXServiceWorkerModule {
     this.initialPage = config['initial_page']
     this.defaultPage = config['default_page']
 
-    chrome.storage.local.get('webmunkDefaultPageOpenedInitial')
+    chrome.storage.local.get('rexDefaultPageOpenedInitial')
       .then((response) => {
-        if (response.webmunkDefaultPageOpenedInitial === undefined) {
-          chrome.storage.local.set({webmunkDefaultPageOpenedInitial: true})
+        if (response.rexDefaultPageOpenedInitial === undefined) {
+          chrome.storage.local.set({rexDefaultPageOpenedInitial: true})
           .then(() => {
             if (this.initialPage) {
               chrome.tabs.create({ url: this.initialPage });
@@ -87,7 +87,7 @@ class WebmunkDefaultPageModule extends REXServiceWorkerModule {
   }
 }
 
-const plugin = new WebmunkDefaultPageModule()
+const plugin = new REXDefaultPageModule()
 
 registerREXModule(plugin)
 
