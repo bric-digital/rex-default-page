@@ -129,7 +129,7 @@ test.describe('REX Default Page', () => {
     await waitForDefaultPageModuleReady(serviceWorker)
 
     const listenerWasAdded = await serviceWorker.evaluate(async () => {
-      return self.rexDefaultPagePlugin.listenerAdded === true
+      return self.rexDefaultPagePlugin.listenersAdded === true
     })
     expect(listenerWasAdded).toBe(true)
 
@@ -143,12 +143,14 @@ test.describe('REX Default Page', () => {
 
     const listenerStateAfterDisable = await serviceWorker.evaluate(async () => {
       return {
-        listenerAdded: self.rexDefaultPagePlugin.listenerAdded,
-        tabListener: self.rexDefaultPagePlugin.tabListener
+        listenersAdded: self.rexDefaultPagePlugin.listenersAdded,
+        tabCreatedListener: self.rexDefaultPagePlugin.tabCreatedListener,
+        tabUpdatedListener: self.rexDefaultPagePlugin.tabUpdatedListener
       }
     })
-    expect(listenerStateAfterDisable.listenerAdded).toBe(false)
-    expect(listenerStateAfterDisable.tabListener).toBeNull()
+    expect(listenerStateAfterDisable.listenersAdded).toBe(false)
+    expect(listenerStateAfterDisable.tabCreatedListener).toBeNull()
+    expect(listenerStateAfterDisable.tabUpdatedListener).toBeNull()
 
     const finalUrl = await serviceWorker.evaluate(async () => {
       const tab = await chrome.tabs.create({})

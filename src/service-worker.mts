@@ -7,11 +7,26 @@ export interface REXDefaultPageConfiguration {
   default_page?:string,
 }
 
+const EMPTY_TAB_URLS = [
+  'chrome://newtab/',
+  'chrome://newtab',
+  'about:blank',
+  'chrome://new-tab-page/',
+  'edge://newtab/',
+  'edge://newtab'
+]
+
+function isNewTab(url: string | undefined): boolean {
+  if (url === undefined || url === '') return true
+  return EMPTY_TAB_URLS.includes(url)
+}
+
 class REXDefaultPageModule extends REXServiceWorkerModule {
   initialPage?:string
   defaultPage?:string
-  listenerAdded:boolean = false
-  tabListener: Parameters<typeof chrome.tabs.onUpdated.addListener>[0] | null = null
+  listenersAdded:boolean = false
+  tabCreatedListener: Parameters<typeof chrome.tabs.onCreated.addListener>[0] | null = null
+  tabUpdatedListener: Parameters<typeof chrome.tabs.onUpdated.addListener>[0] | null = null
 
   moduleName() {
     return 'DefaultPageModule'
@@ -42,10 +57,16 @@ class REXDefaultPageModule extends REXServiceWorkerModule {
 
   updateConfiguration(config:REXDefaultPageConfiguration) {
     if (config.enabled === false) {
-      if (this.listenerAdded && this.tabListener !== null) {
-        chrome.tabs.onUpdated.removeListener(this.tabListener)
-        this.tabListener = null
-        this.listenerAdded = false
+      if (this.listenersAdded) {
+        if (this.tabCreatedListener !== null) {
+          chrome.tabs.onCreated.removeListener(this.tabCreatedListener)
+          this.tabCreatedListener = null
+        }
+        if (this.tabUpdatedListener !== null) {
+          chrome.tabs.onUpdated.removeListener(this.tabUpdatedListener)
+          this.tabUpdatedListener = null
+        }
+        this.listenersAdded = false
       }
 
       return
@@ -66,31 +87,31 @@ class REXDefaultPageModule extends REXServiceWorkerModule {
         }
       })
 
-    if (this.listenerAdded === false) {
-      this.tabListener = (tabId, changeInfo, tab) => {
+    if (this.listenersAdded === false) {
+      // onCreated fires at tab birth — catches Edge new tabs before onUpdated.
+      // Only redirect when the URL is an explicit new-tab URL; skip empty string
+      // here because tabs created with a URL briefly show empty before it resolves.
+      this.tabCreatedListener = (tab) => {
+        if (EMPTY_TAB_URLS.includes(tab.url ?? '') && this.defaultPage !== undefined) {
+          chrome.tabs.update(tab.id!, { url: this.defaultPage })
+        }
+      }
+
+      // onUpdated catches cases where the tab URL resolves after creation,
+      // including Edge reporting empty string for edge:// scheme tabs.
+      this.tabUpdatedListener = (tabId, changeInfo, tab) => {
         if (changeInfo.status === 'loading') {
-          // Check if this is a new tab with blank/new tab URL and redirect if configured
-
-          const emptyTabUrls = [
-            'chrome://newtab/',
-            'chrome://newtab',
-            'about:blank',
-            'chrome://new-tab-page/',
-            'edge://newtab/',
-            'edge://newtab'
-          ]
-
-          // tab.url is empty string when Edge restricts access to edge:// scheme URLs
-          const tabUrl = tab.url ?? ''
-          if ((emptyTabUrls.includes(tabUrl) || tabUrl === '') && this.defaultPage !== undefined) {
+          const urlToCheck = changeInfo.url ?? tab.url
+          if (isNewTab(urlToCheck) && this.defaultPage !== undefined) {
             chrome.tabs.update(tabId, { url: this.defaultPage })
           }
         }
       }
 
-      chrome.tabs.onUpdated.addListener(this.tabListener)
+      chrome.tabs.onCreated.addListener(this.tabCreatedListener)
+      chrome.tabs.onUpdated.addListener(this.tabUpdatedListener)
 
-      this.listenerAdded = true
+      this.listenersAdded = true
     }
   }
 }
