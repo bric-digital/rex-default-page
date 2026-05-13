@@ -75,10 +75,14 @@ class REXDefaultPageModule extends REXServiceWorkerModule {
             'chrome://newtab/',
             'chrome://newtab',
             'about:blank',
-            'chrome://new-tab-page/'
+            'chrome://new-tab-page/',
+            'edge://newtab/',
+            'edge://newtab'
           ]
 
-          if (tab.url !== undefined && emptyTabUrls.includes(tab.url) && this.defaultPage !== undefined) {
+          // tab.url is empty string when Edge restricts access to edge:// scheme URLs
+          const tabUrl = tab.url ?? ''
+          if ((emptyTabUrls.includes(tabUrl) || tabUrl === '') && this.defaultPage !== undefined) {
             chrome.tabs.update(tabId, { url: this.defaultPage })
           }
         }

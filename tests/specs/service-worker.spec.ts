@@ -121,7 +121,7 @@ test.describe('REX Default Page', () => {
     })
 
     expect(finalUrl).not.toContain('example.org/default')
-    expect(finalUrl).toMatch(/chrome:\/\/(newtab|new-tab-page)\/?/)
+    expect(finalUrl).toMatch(/(chrome|edge):\/\/(newtab|new-tab-page)\/?/)
   })
 
   test('toggling enabled true -> false removes the listener', async ({ serviceWorker }) => {
@@ -158,6 +158,6 @@ test.describe('REX Default Page', () => {
     })
 
     expect(finalUrl).not.toContain('example.org/default')
-    expect(finalUrl).toMatch(/chrome:\/\/(newtab|new-tab-page)\/?/)
+    expect(finalUrl).toMatch(/(chrome|edge):\/\/(newtab|new-tab-page)\/?/)
   })
 })
