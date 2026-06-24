@@ -16,11 +16,6 @@ const EMPTY_TAB_URLS = [
   'edge://newtab'
 ]
 
-function isNewTab(url: string | undefined): boolean {
-  if (url === undefined || url === '') return true
-  return EMPTY_TAB_URLS.includes(url)
-}
-
 class REXDefaultPageModule extends REXServiceWorkerModule {
   initialPage?:string
   defaultPage?:string
@@ -97,12 +92,14 @@ class REXDefaultPageModule extends REXServiceWorkerModule {
         }
       }
 
-      // onUpdated catches cases where the tab URL resolves after creation,
-      // including Edge reporting empty string for edge:// scheme tabs.
+      // onUpdated catches cases where the tab URL resolves after creation.
+      // Decide on where the tab is going (its destination), never on tab.url, which
+      // is the page being left. Using tab.url would hijack a click that navigates
+      // away from the new tab page. An unknown destination is left untouched.
       this.tabUpdatedListener = (tabId, changeInfo, tab) => {
         if (changeInfo.status === 'loading') {
-          const urlToCheck = changeInfo.url ?? tab.url
-          if (isNewTab(urlToCheck) && this.defaultPage !== undefined) {
+          const destination = changeInfo.url ?? tab.pendingUrl
+          if (destination !== undefined && EMPTY_TAB_URLS.includes(destination) && this.defaultPage !== undefined) {
             chrome.tabs.update(tabId, { url: this.defaultPage })
           }
         }
