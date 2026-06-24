@@ -103,6 +103,61 @@ test.describe('REX Default Page', () => {
     }, { timeout: 5000 }).toContain('example.org/default')
   })
 
+  test('navigating away from the new tab page is not hijacked to default_page', async ({ serviceWorker }) => {
+    await loadConfig(serviceWorker, TEST_CONFIG)
+    await waitForDefaultPageModuleReady(serviceWorker)
+
+    const redirectedTo = await serviceWorker.evaluate(async () => {
+      let updatedTo = null
+      const originalUpdate = chrome.tabs.update
+      chrome.tabs.update = (_tabId, props) => {
+        updatedTo = props.url
+        return Promise.resolve({})
+      }
+
+      // A participant sits on the real new tab page and clicks a shortcut (e.g. Gmail).
+      // The first 'loading' event arrives before the destination url resolves, so
+      // changeInfo.url is undefined and tab.url still reads chrome://newtab/.
+      self.rexDefaultPagePlugin.tabUpdatedListener(
+        123,
+        { status: 'loading' },
+        { id: 123, url: 'chrome://newtab/' }
+      )
+
+      chrome.tabs.update = originalUpdate
+      return updatedTo
+    })
+
+    // The user's navigation must be left alone, not redirected to the default page.
+    expect(redirectedTo).toBeNull()
+  })
+
+  test('a tab whose destination is the new tab page is still redirected', async ({ serviceWorker }) => {
+    await loadConfig(serviceWorker, TEST_CONFIG)
+    await waitForDefaultPageModuleReady(serviceWorker)
+
+    const redirectedTo = await serviceWorker.evaluate(async () => {
+      let updatedTo = null
+      const originalUpdate = chrome.tabs.update
+      chrome.tabs.update = (_tabId, props) => {
+        updatedTo = props.url
+        return Promise.resolve({})
+      }
+
+      // The tab is loading the new tab page itself (destination is a new-tab URL).
+      self.rexDefaultPagePlugin.tabUpdatedListener(
+        123,
+        { status: 'loading' },
+        { id: 123, pendingUrl: 'chrome://newtab/' }
+      )
+
+      chrome.tabs.update = originalUpdate
+      return updatedTo
+    })
+
+    expect(redirectedTo).toContain('example.org/default')
+  })
+
   test('enabled: false from the start disables redirect', async ({ serviceWorker }) => {
     const disabledConfig = {
       ...TEST_CONFIG,
