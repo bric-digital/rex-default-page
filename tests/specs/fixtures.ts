@@ -20,6 +20,10 @@ export const test = base.extend<{
       args: [
         `--disable-extensions-except=${pathToExtension}`,
         `--load-extension=${pathToExtension}`,
+        // Standard flags for running headless Chromium inside a CI container,
+        // where the sandbox cannot initialize and /dev/shm is undersized.
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
       ],
     });
 
